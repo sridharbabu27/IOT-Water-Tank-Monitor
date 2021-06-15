@@ -1,0 +1,39 @@
+from boltiot import Sms, Bolt
+import json, time
+minval=6
+maxval=20
+SSID = 'YOUR SID' 
+AUTH_TOKEN = 'YOUR TWILLIO AUTH TOKEN' 
+FROM_NUMBER = 'YOUR TWILLIIO NUMBER'
+TO_NUMBER = 'YOUR PHONE NUMBER'
+API_KEY = 'YOUR BOLT IOT API KEY'
+DEVICE_ID = 'YOUR BOLT DEVICE ID'
+FRAME_SIZE = 10
+MUL_FACTOR = 6
+
+
+mybolt = Bolt(API_KEY,DEVICE_ID)
+sms = Sms(SSID,AUTH_TOKEN,TO_NUMBER,FROM_NUMBER)
+
+
+while True: 
+    print ("Reading sensor value")
+    response = mybolt.serialRead('3') 
+    data = json.loads(response)
+    j=data['value'].rstrip()
+    print("Sensor value is: " +j)
+    try:
+        if int(j)<=minval:
+            print("Making request to Twilio to send a SMS")
+            response = sms.send_sms("The tank is full please swith off the motor ")
+            print("Response received from Twilio is: " + str(response))
+            print("Status of SMS at Twilio is :" + str(response.status))
+        if int(j)>=maxval:
+            print("Making request to Twilio to send a SMS")
+            response = sms.send_sms("The tank is empty please swith on the motor ")
+            print("Response received from Twilio is: " + str(response))
+            print("Status of SMS at Twilio is :" + str(response.status))    
+    except Exception as e: 
+        print ("Error occured: Below are the details")
+        print (e)
+    time.sleep(5)
